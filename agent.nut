@@ -1,33 +1,35 @@
 local tokens = {
     lighttoken = "gkf702rvnq",
-    pottoken = "cqdx85joo1"
+    temptoken = "cqdx85joo1"
 }
 
 device.on("init" function(msg) {
     local data = [{
         x = [],
         y = [],
+        type = "scatter",
+        mode = "markers",
         stream = {
             token = tokens.lighttoken,
-            maxpoints = 25
+            maxpoints = 500
         }
     },
     {
         x = [],
         y = [],
+        type = "bar"
         stream = {
-            token = tokens.pottoken,
-            maxpoints = 25
+            token = tokens.temptoken,
+            maxpoints = 500
         }
     }];
 
     local layout = {
         fileopt = "extend",
-        filename = "Electric Imp 8"
+        filename = "Sunlight Jams3",
 
     };
-    // Set Content-Type header to json
-    local headers = { "Content-Type" : "application/json" };
+
 
     local payload = {
     un = "electricimp",
@@ -39,6 +41,7 @@ device.on("init" function(msg) {
     version = "0.0.1"
     };
     // encode data and log
+    local headers = { "Content-Type" : "application/json" };
     local body = http.urlencode(payload);
     local url = "https://plot.ly/clientresp";
     HttpPostWrapper(url, headers, body, true);
@@ -46,30 +49,34 @@ device.on("init" function(msg) {
     device.send("initsuccess", "success");
 });
 
+local t = 0
+
 device.on("sendlight", function(incoming) {
     local headers = {"plotly-streamtoken" : tokens.lighttoken };
     local body = {
-        x = getTime(),
-        y = incoming
+        x = incoming.time_stamp,
+        y = 8,
+        marker = {
+            size = (incoming.light_sensor_reading)*2,
+        },
+        text = incoming.light_sensor_reading
     }
     local data = http.jsonencode(body);
     local url  = "http://54.201.244.104:9999/"
-    //server.log(data);
     HttpPostWrapper(url, headers, data, false);
 });
 
-device.on("sendpot", function(incoming) {
-    local headers = {"plotly-streamtoken" : tokens.pottoken };
+
+device.on("sendtemp", function(incoming) {
+    local headers = {"plotly-streamtoken" : tokens.temptoken };
     local body = {
-        x = getTime(),
-        y = incoming
+        x = incoming.time_stamp,
+        y = incoming.temp_sensor_reading,
     }
     local data = http.jsonencode(body);
     local url  = "http://54.201.244.104:9999/"
-    //server.log(data);
     HttpPostWrapper(url, headers, data, false);
 });
-
 
 function HttpPostWrapper (url, headers, string, log) {
 
@@ -81,22 +88,5 @@ function HttpPostWrapper (url, headers, string, log) {
 
 }
 
-function getTime() {
-    local date = date();
-    local sec = stringTime(date["sec"]);
-    local min = stringTime(date["min"]);
-    local hour = stringTime(date["hour"]);
-    local day = stringTime(date["day"]);
-    local month = date["month"];
-    local year = date["year"];
-    return year+"-"+month+"-"+day+" "+hour+":"+min+":"+sec;
 
-}
-
-function stringTime(num) {
-    if (num < 10)
-        return "0"+num;
-    else
-        return ""+num;
-}
 
