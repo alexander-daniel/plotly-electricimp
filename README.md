@@ -1,4 +1,4 @@
-plotly-electricimp
+Realtime Streaming of ElectricImp Sensor Data to Plot.ly
 ==================
 
-Streaming Sensor Data from an Electric Imp
+

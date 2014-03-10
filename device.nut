@@ -1,48 +1,33 @@
-local light_sensor = hardware.pin8;
-local temp_sensor = hardware.pin2;
+// initialize  pins
+local sensor = hardware.pin1;
+sensor.configure(ANALOG_IN);
 
-light_sensor.configure(ANALOG_IN);
-temp_sensor.configure(ANALOG_IN);
-
-
+// When device is started, start Agent Initialization process
 function init() {
     agent.send("init", "hello");
 }
 
-function getLight() {
-    server.log("getting light");
+// Returns sensor voltage
+function getSensorVoltage() {
     local supplyVoltage = hardware.voltage();
-    local voltage = supplyVoltage * light_sensor.read() / 65535.0;
-    return (voltage)*20;
+    local voltage = supplyVoltage * sensor.read() / 65535.0;
+    return (voltage);
 }
 
-function getTemp() {
-    server.log("getting temp");
-    local supplyVoltage = hardware.voltage();
-    local voltage = supplyVoltage * temp_sensor.read() / 65535.0;
-    local c = (voltage - 0.5) * 100 ;
-    return c;
-}
-
-function getLightSensor() {
+// Sends new reading to the Agent to be Streamed
+function readSensor() {
     local sensordata = {
-        light_sensor_reading = getLight(),
+        sensor_reading = getSensorVoltage(),
         time_stamp = getTime(),
         }
-    agent.send("sendlight", sensordata);
-    imp.wakeup(1, getLightSensor);
+    agent.send("new_reading", sensordata);
+    imp.wakeup(1, readSensor); // Frequency to Stream data to Plot.ly (min 1)
 
 }
 
-function getTempSensor() {
-    local sensordata = {
-        temp_sensor_reading = getTemp(),
-        time_stamp = getTime(),
-        }
-    agent.send("sendtemp", sensordata);
-    imp.wakeup(1, getTempSensor);
-}
-
+// Get Time String, -14400 is for -4 GMT (Montreal)
+// use 3600 and multiply by the hours +/- GMT.
+// e.g for +5 GMT local date = date(time()+18000, "u");
 function getTime() {
     local date = date(time(), "l");
     local sec = stringTime(date["sec"]);
@@ -55,6 +40,7 @@ function getTime() {
 
 }
 
+// Fix Time String
 function stringTime(num) {
     if (num < 10)
         return "0"+num;
@@ -62,9 +48,10 @@ function stringTime(num) {
         return ""+num;
 }
 
+// When the Agent is initialized, start Streaming Data!
 agent.on("initsuccess" function(msg) {
-   getTempSensor();
-   getLightSensor();
+    readSensor();
 });
 
+// Send initialization:start message to Agent
 init();
