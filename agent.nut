@@ -1,6 +1,6 @@
 // Initialize your Plotly stream tokens
 local tokens = {
-    sensortoken = "gkf702rvnq"
+    sensortoken = "your_stream_token"
 }
 
 // Initialize Plotly Graph when the Device sends init message
@@ -34,10 +34,10 @@ device.on("init" function(msg) {
 
     // format object to be POSTed
     local payload = {
-    un = "electricimp",
-    key = "6hpu3v8jaf",
+    un = "your_username",
+    key = "your_apikey",
     origin = "plot",
-    platform = "rest",
+    platform = "electricimp",
     args = http.jsonencode(data),
     kwargs = http.jsonencode(layout),
     version = "0.0.1"
