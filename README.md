@@ -1,5 +1,6 @@
 ### Real-time Streaming of ElectricImp Sensor Data to Plot.ly
 ##### Make HTTP posts with the Electric Imp and Visualize your sensor Data
+[![Plotly-Arduino library graph](readme_images/imp.jpg)](https://electricimp.com)
 
 You'll need to have an account with Plot.ly to begin. 
 
